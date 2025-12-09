@@ -3,8 +3,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
 from app.admin.router import router as admin_router
+from app.proxy.router import router as proxy_router
 
-app = FastAPI(title="FastAPI Project", version="1.0.0")
+app = FastAPI(title="ProxiBase", version="1.0.0")
 
 # Mount static files and templates
 static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
@@ -17,8 +18,11 @@ os.makedirs(template_path, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_path), name="static")
 templates = Jinja2Templates(directory=template_path)
 
-# Include admin router
+# Include admin router first (takes priority)
 app.include_router(admin_router)
+
+# Include proxy router last (catch-all for mirror domains)
+app.include_router(proxy_router)
 
 
 @app.get("/health")
@@ -28,4 +32,4 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    return {"message": "FastAPI Project is running"}
+    return {"message": "ProxiBase is running"}
