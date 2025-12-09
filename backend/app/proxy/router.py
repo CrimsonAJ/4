@@ -355,12 +355,14 @@ async def proxy_handler(
     """
     host = request.headers.get('host', '')
     
-    # If host is admin host, skip (handled by admin router)
+    # If host is admin host and path starts with admin routes, skip
     if host == settings.ADMIN_HOST:
-        return Response(
-            content="Not found",
-            status_code=404
-        )
+        # Let admin router handle these paths
+        if not path or path.startswith('admin') or path.startswith('login') or path.startswith('logout') or path == 'health':
+            return Response(
+                content="Not found - handled by other routers",
+                status_code=404
+            )
     
     # Find matching site
     site = await find_site_by_host(host, db)
